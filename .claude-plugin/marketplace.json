@@ -4,7 +4,7 @@
   "displayName": "goofish-cli Skills",
   "description": "闲鱼（goofish.com）自动化运营的 Claude Skills 套件。配合 goofish-cli MCP server 使用，让 Agent 在发布商品 / 回复买家 / 风控预检 / 店铺诊断这些场景里上手即会。",
   "version": "0.3.0",
-  "author": {
+  "owner": {
     "name": "fancy",
     "url": "https://github.com/fancyboi999"
   },
