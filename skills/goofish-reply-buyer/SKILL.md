@@ -20,6 +20,12 @@ allowed-tools:
 
 # 闲鱼回买家消息
 
+## 工具命名
+
+正文使用 `auth_status` 这类逻辑名。OpenClaw 调 `goofish__<逻辑名>`；
+Claude Code / Cursor 调 `mcp__goofish__<逻辑名>`。frontmatter 的 `allowed-tools`
+保留 Claude 权限预批准格式，OpenClaw 不读取该字段。
+
 ## 触发姿势
 
 用户典型输入：
@@ -48,16 +54,19 @@ allowed-tools:
 ### Step 1 · 登录态自检
 
 ```
-mcp__goofish__auth_status → valid=false 直接停，提示用户 auth login
+auth_status → valid=false 直接停，提示用户 auth login
 ```
 
 ### Step 2 · 拉未读会话
 
 ```
-mcp__goofish__message_list_chats(limit=20)
+message_list_chats(fetch_num=20)
 ```
 
-返回会话列表，每项含 cid / 对方昵称 / 最后一条消息预览 / 未读数。
+返回按活动时间倒序的会话列表，每项含 session_id / 对方昵称 / 最后一条消息预览 / 未读数。
+默认短时 WS 会话发现；先检查 metadata_status 和 metadata_errors。身份缺失或摘要过期的会话先补信息，不猜对方身份。
+HTTP 的 has_more 不代表整份会话列表完整，短时同步也不能保证发现全部历史会话。
+WS 条目的 unread=null 表示未知，不能按零忽略，也不能直接与数字比较。
 
 **筛选策略**：
 - 优先未读数 > 0 的
@@ -68,14 +77,14 @@ mcp__goofish__message_list_chats(limit=20)
 
 ```
 对每个选中的 cid:
-    mcp__goofish__message_history(cid=..., limit=20)
+    message_history(cid=session_id, limit=20)
 ```
 
 20 条基本够分类意图了。太长的会话（50+ 条）拉 30 条。
 
 **同时**（如果消息提到具体商品 ID）：
 ```
-mcp__goofish__item_get(item_id=...)  # 拿商品的最新状态，价格/标题/是否在售
+item_get(item_id=...)  # 拿商品的最新状态，价格/标题/是否在售
 ```
 
 ### Step 4 · 意图分类
@@ -121,7 +130,7 @@ mcp__goofish__item_get(item_id=...)  # 拿商品的最新状态，价格/标题/
 ### Step 7 · 发送
 
 ```
-mcp__goofish__message_send(cid=..., text="...")
+message_send(cid=..., text="...")
 ```
 
 成功后：

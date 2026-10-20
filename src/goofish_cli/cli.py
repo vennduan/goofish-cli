@@ -9,8 +9,10 @@ import typer
 from loguru import logger
 
 from goofish_cli.core import GoofishError, iter_commands
+from goofish_cli.core.errors import PartialResultError
 from goofish_cli.core.output import Format, render
 from goofish_cli.core.registry import Command, discover
+from goofish_cli.sandbox.cli import app as sandbox_app
 
 app = typer.Typer(
     name="goofish",
@@ -18,6 +20,7 @@ app = typer.Typer(
     no_args_is_help=True,
     add_completion=False,
 )
+app.add_typer(sandbox_app, name="sandbox")
 
 
 def _format_option() -> typer.Option:
@@ -51,6 +54,10 @@ def _wrap(cmd: Command):
         fmt = Format(kwargs.pop("format"))
         try:
             result = cmd.func(**kwargs)
+        except PartialResultError as e:
+            render(e.data, fmt=fmt, columns=cmd.columns or None)
+            typer.secho(f"[{e.error.get('error_type', 'PartialResultError')}] {e}", fg=typer.colors.RED, err=True)
+            raise typer.Exit(code=e.exit_code) from e
         except GoofishError as e:
             typer.secho(f"[{type(e).__name__}] {e}", fg=typer.colors.RED, err=True)
             raise typer.Exit(code=e.exit_code) from e

@@ -4,9 +4,72 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.6.0](https://github.com/fancyboi999/goofish-cli/compare/v0.5.3...v0.6.0) (2026-10-19)
+
+
+### Features
+
+* 支持 Docker 独立桌面沙箱模式 ([#45](https://github.com/fancyboi999/goofish-cli/issues/45)) ([cce6d69](https://github.com/fancyboi999/goofish-cli/commit/cce6d696fedf535a9e6239f340fa1dc033303d25))
+
+## [0.5.3](https://github.com/fancyboi999/goofish-cli/compare/v0.5.2...v0.5.3) (2026-10-12)
+
+
+### Documentation
+
+* **readme:** embed native GitHub video player with sound ([101211b](https://github.com/fancyboi999/goofish-cli/commit/101211b6889455307ce9dc7e1e5f3c1db7c67508))
+* **readme:** embed native GitHub video player with sound ([a7bdfbd](https://github.com/fancyboi999/goofish-cli/commit/a7bdfbd0dfd8637f95e25e81edbf72e1c0762451))
+
+## [0.5.2](https://github.com/fancyboi999/goofish-cli/compare/v0.5.1...v0.5.2) (2026-10-10)
+
+
+### Bug Fixes
+
+* **ci:** verify PyPI releases through the install index ([#40](https://github.com/fancyboi999/goofish-cli/issues/40)) ([d9dfc78](https://github.com/fancyboi999/goofish-cli/commit/d9dfc78b630175eb031cdbfc7612689e10ff4611))
+
+## [0.5.1](https://github.com/fancyboi999/goofish-cli/compare/v0.5.0...v0.5.1) (2026-10-10)
+
+
+### Bug Fixes
+
+* **ci:** automate verified PyPI releases; keep ClawHub manual ([#38](https://github.com/fancyboi999/goofish-cli/issues/38)) ([4349e5e](https://github.com/fancyboi999/goofish-cli/commit/4349e5ef5bbe7693f4eaa1d5bf858936c93aa951))
+
 ## [Unreleased]
 
-## [0.3.0] - 2026-04-22
+## [0.5.0] - 2026-10-10
+
+### Changed
+- 会话列表默认启用 5 秒 WS 发现，补齐最近消息并按活动时间倒序；
+  缺失时间和未知未读数返回 null，列表完整性与最近消息上下文状态分别说明。
+- 历史消息保留 CID、消息 ID 和创建时间；支持 limit 限定最近条数及 timeout，
+  按服务端消息 ID 去重，缺少 ID 的记录不按正文或时间推断为重复。
+
+### Fixed
+- 多图发布仅最终提交计一次商品预算，媒体上传独立计数；已上传收据、已确认类目和地址可复用，失败保留准备信息与提交状态。
+- 本机限流和熔断按账号持久化，跨进程事务加锁、原子保存，损坏状态拒绝写入；风控保存失败保留原始错误。
+- 搜索从真实页面响应读取语义字段，保留未知标签，区分昵称、地域与原价；无命中时排除推荐卡片，分页响应绑定查询与页码，部分失败在 CLI/MCP 明确报告。
+- 商品详情从 itemDO/sellerDO 提取，保留价格和状态 0；类目分数对应选中分类，发布地址使用 selectedPoi。
+- 单聊结合 userInfo 与 ownerInfo 及当前账号确认对端，避免买卖家角色对换时
+  选到自己；WS 会话的角色信息与消息参加者共同用于身份确认。
+- MCP 输出 schema 与统一的 ok/data 或错误对象一致，避免历史工具返回 list
+  的声明与适配器实际对象冲突。
+- 消息读取在超时、连接失败或分页游标不推进时明确报告失败；列表保留已有
+  结果并标注未完成的摘要，取消时清理连接和心跳。
+
+## [0.4.0] - 2026-09-07
+
+### Added
+- 搜索支持 `goofish search items --pages N`，跨页按商品 ID 去重；默认仍读取一页，
+  `--limit` 控制所有页面的结果总数。返回 `pages_fetched`、`pages_total` 和
+  `stopped_reason`，说明实际翻页数量与停止原因。翻页过程中发生错误或遇到登录阻拦时，
+  保留已经取得的结果。
+
+### Fixed
+- 浏览器导入、JSON 导入、扫码登录和 Cookie 刷新保留 Cookie 的 domain/path，
+  防止同名 Cookie 覆盖或注入到错误域名、路径；兼容旧版扁平 Cookie 数据。
+- 修复 Cookie 刷新在 `persist=False` 时的异常，并保持内存与持久化记录一致。
+- 恢复搜索成功时的结构化返回；仅在首屏没有结果且明确要求登录时重试一次。
+
+## [0.3.0] - 2026-08-19
 
 ### Added
 - **Claude Skills 套件**（5 个 skill，打包进 wheel）：把 goofish-cli 从"给 Agent 用的
@@ -30,12 +93,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - **wheel 打包 skills**：hatch `force-include` 把项目根 `skills/` 装进
   `goofish_cli/_bundled_skills/`，运行时用 `goofish_cli.__file__` 拿包路径定位
   （不依赖 namespace package 的 importlib.resources 行为，避免 py 版本差异坑）。
+- **OpenClaw / ClawHub compatible bundle**：用 `.codex-plugin/plugin.json`、`.mcp.json`
+  和 5 个内置 skills 组成 Codex-compatible bundle；OpenClaw 2026.6.1+ 可一次安装 MCP
+  server 与 skills。默认公开 13 个业务 tools，并排除登录、重置风控、长时间 watch 和
+  skills 安装等 4 个需要操作者控制的 tools。
+- **`goofish item list`**：通过 `mtop.idle.web.xyh.item.list` 分页列出当前账号的在售和
+  已下架商品，提取价格、状态、图片和文本标签；后续修复了图片图标 key 泄漏、重复商品、
+  空页继续翻页和异常 `nextPage` 导致的无限循环风险。
+- **OpenClaw 包验证**：检查四处版本对齐、MCP tool filter、archive 文件白名单、敏感内容，
+  并通过 embedded-agent trajectory 验证实际 bundle 工具目录。
 
 ### Changed
 - `pyproject.toml` 新增 `[tool.hatch.build.targets.wheel.force-include]` 和
   `[tool.hatch.build.targets.sdist]` 段。wheel 只 force-include `skills/`（运行时
   `goofish skills install` 唯一需要的资源）；sdist 额外带 `.claude-plugin/` 和
   `README / CHANGELOG / LICENSE`，便于从源码分发时拿到完整元数据。
+- skills 同时记录 OpenClaw (`goofish__*`) 和 Claude (`mcp__goofish__*`) 的 MCP tool 名。
+- MCP Python SDK 约束为 `mcp>=1.2,<2`；2.0 已移除当前 server 使用的
+  `mcp.server.fastmcp`，未迁移前禁止 clean install 静默跨主版本。
+- `goofish-cli` 在交互终端启动时明确提示它是 MCP stdio server；Typer positional metadata
+  只进入 CLI wrapper，pyexecjs 的编码 workaround 也不再全局替换 `subprocess.Popen`。
+
+### Fixed
+- 修复闲鱼登录页改版后 `auth login --qr` 必然超时：入口改为 `/login`，按 passport frame
+  URL 重新定位跨文档导航后的 iframe，并兼容 QR 从 `<canvas>` 改为 `<img>` 的 DOM。
+
+### Security
+- Cookie 文件改为 Fernet 加密存储，使用机器与用户信息派生本地密钥；旧版明文 cookie
+  首次读取时自动迁移为密文。
+- 新增全仓库敏感标识扫描，阻止真实格式的账号、会话、发送者和消息标识进入提交与
+  OpenClaw/ClawHub 发布产物。
 
 ## [0.2.4] - 2026-04-22
 
@@ -158,7 +245,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - 本版本需要用户手动从浏览器导入 cookie（含 `unb` / `_m_h5_tk` / `x5sec`）
 - 遇到 `RGV587_ERROR` 风控时，需在浏览器完成滑块验证并**重新导出**带 `x5sec` 的 cookie
 
-[Unreleased]: https://github.com/fancyboi999/goofish-cli/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/fancyboi999/goofish-cli/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/fancyboi999/goofish-cli/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/fancyboi999/goofish-cli/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/fancyboi999/goofish-cli/compare/v0.2.4...v0.3.0
 [0.2.4]: https://github.com/fancyboi999/goofish-cli/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/fancyboi999/goofish-cli/compare/v0.2.2...v0.2.3

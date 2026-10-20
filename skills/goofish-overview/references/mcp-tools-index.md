@@ -1,52 +1,53 @@
-# MCP 工具速查（共 16 个）
+# MCP 工具速查（共 17 个）
 
-> 命名规则：`mcp__goofish__{namespace}_{name}`，CLI 的 kebab-case 在 MCP 里被转成 snake_case。
-> 例：CLI `goofish message list-chats` → MCP `mcp__goofish__message_list_chats`。
-> `goofish skills install` 也会被 registry 扫到并暴露为 `mcp__goofish__skills_install`，
+> 下表使用 registry 逻辑名。OpenClaw 调 `goofish__<逻辑名>`，Claude Code / Cursor
+> 调 `mcp__goofish__<逻辑名>`。例：CLI `goofish message list-chats` 的逻辑名是
+> `message_list_chats`。`goofish skills install` 也会被 registry 扫到并暴露为 `skills_install`，
 > 但它是给**用户在终端跑**的辅助命令，Agent 通常不主动调。
 
 ## Auth（3 个）
 
 | 工具 | 用途 | 何时调 | 副作用 |
 |---|---|---|---|
-| `mcp__goofish__auth_status` | 查登录态（返回 `{unb, tracknick, nick, valid, h5_token_exp}`） | 任何写操作前第一步 | 无 |
-| `mcp__goofish__auth_login` | 导入登录态（browser auto-detect / 指定源 / `--qr` 扫码） | **Agent 不主动调**，只建议用户手动执行 | 覆盖磁盘 cookies.json |
-| `mcp__goofish__auth_reset_guard` | 解本地熔断 | RGV587 触发后的恢复步骤之一，但**不解服务端风控** | 清 local guard 状态 |
+| `auth_status` | 查登录态（返回 `{unb, tracknick, nick, valid, h5_token_exp}`） | 任何写操作前第一步 | 无 |
+| `auth_login` | 导入登录态（browser auto-detect / 指定源 / `--qr` 扫码） | **Agent 不主动调**，只建议用户手动执行 | 覆盖磁盘 cookies.json |
+| `auth_reset_guard` | 解本地熔断 | RGV587 触发后的恢复步骤之一，但**不解服务端风控** | 清 local guard 状态 |
 
-## Item（4 个）
+## Item（5 个）
 
 | 工具 | 用途 | 典型入参 | 风险 |
 |---|---|---|---|
-| `mcp__goofish__item_get` | HTTP 视角拉详情（只读） | `item_id` | 无 |
-| `mcp__goofish__item_view` | 浏览器视角拉详情（字段更全、抗风控） | `item_id` | 触发 Playwright 启动 |
-| `mcp__goofish__item_publish` | 发布商品（自动类目+默认地址） | `title, desc, price, image_urls, cat_id?, addr?` | **写操作**，令牌桶 1 写/分钟 |
-| `mcp__goofish__item_delete` | 下架/删除商品 | `item_id` | **写操作** + 风控护栏 |
+| `item_get` | HTTP 视角拉详情（只读） | `item_id` | 无 |
+| `item_list` | 查看当前账号的在售商品 | `limit?` | 无 |
+| `item_view` | 浏览器视角拉详情（字段更全、抗风控） | `item_id` | 触发 Playwright 启动 |
+| `item_publish` | 发布商品（自动类目+默认地址） | `title, desc, price, images?, images_json?, category_json?, location_json?` | **写操作**，item.write 默认 1 次/分钟 |
+| `item_delete` | 下架/删除商品 | `item_id` | **写操作** + 风控护栏 |
 
-**发布前强依赖**：`category_recommend` 拿 catId、`media_upload` 拿 image_urls、`location_default` 兜底 addr。
+**发布前强依赖**：`category_recommend` 拿 catId、`media_upload` 拿图片收据、`location_default` 兜底 location_json。
 
 ## Message（4 个）
 
 | 工具 | 用途 | 典型入参 | 备注 |
 |---|---|---|---|
-| `mcp__goofish__message_list_chats` | 会话列表（左栏） | `limit?, watch_secs?` | session.sync v3.0 是阉割版，默认会启 WebSocket 增量补齐 cid |
-| `mcp__goofish__message_history` | 某 cid 的历史消息（翻页到底） | `cid` | 拉上下文做意图分类用 |
-| `mcp__goofish__message_watch` | 常驻 IM 长连接，事件以 JSONL 输出 | `secs?` | 阻塞式；Skill 里慎用，短连接更合适 |
-| `mcp__goofish__message_send` | 发消息（text/image） | `cid, text` 或 `cid, image_url, w, h` | **写操作** + 外联词风控 |
+| `message_list_chats` | 按最近活动排序的会话摘要 | `fetch_num?, watch_secs?, timeout?` | 默认 5 秒 WS 发现并读取最近消息；检查 metadata_status，不能把 has_more 当全部会话完整性 |
+| `message_history` | 某 cid 的历史消息 | `cid, limit_per_page?, limit?, timeout?` | limit=0 翻页到底；正数只读最近 N 条，保留 message_id/created_at |
+| `message_watch` | 常驻 IM 长连接，事件以 JSONL 输出 | `secs?` | 阻塞式；Skill 里慎用，短连接更合适 |
+| `message_send` | 发消息（text/image） | `cid, text` 或 `cid, image_url, w, h` | **写操作** + 外联词风控 |
 
 ## Category / Media / Search / Location（4 个）
 
 | 工具 | 用途 | 备注 |
 |---|---|---|
-| `mcp__goofish__category_recommend` | AI 识别类目（输入标题+图片返回 catId/catName） | 发布前必跑，类目错放会降权 |
-| `mcp__goofish__media_upload` | 上传图片到闲鱼 CDN | 返回 `{url, width, height}`，给 `item_publish` 直接用 |
-| `mcp__goofish__search_items` | 搜闲鱼商品（浏览器路径，抗风控） | 诊断限流时用"卖家视角 vs 买家视角"对比 |
-| `mcp__goofish__location_default` | 账号默认发布地址 | `item_publish` 不传 addr 时的兜底 |
+| `category_recommend` | AI 识别类目（输入标题+图片返回 catId/catName） | 发布前必跑，类目错放会降权 |
+| `media_upload` | 上传图片到闲鱼 CDN | 返回 `{url, width, height}`，给 `item_publish` 直接用 |
+| `search_items` | 搜闲鱼商品（浏览器路径，抗风控） | 诊断限流时用"卖家视角 vs 买家视角"对比 |
+| `location_default` | 账号默认发布地址 | `item_publish` 不传 location_json 时的兜底 |
 
 ## Skills（1 个，辅助类）
 
 | 工具 | 用途 | 备注 |
 |---|---|---|
-| `mcp__goofish__skills_install` | 把内置 Claude Skills 复制到 `~/.claude/skills/`（或 `--dest`） | `--list` 仅列出、`--force` 覆盖已有；给**用户**在终端跑，Agent 一般不主动调 |
+| `skills_install` | 把内置 Claude Skills 复制到 `~/.claude/skills/`（或 `--dest`） | `--list` 仅列出、`--force` 覆盖已有；给**用户**在终端跑，Agent 一般不主动调 |
 
 ## 调用模式速记
 
@@ -65,12 +66,15 @@ auth_status → message_list_chats → message_history (按 cid) → [LLM 意图
 auth_status → search_items (用自家核心词，买家视角) → item_view (拉自家详情) → item_get (历史元数据对比)
 ```
 
-## 写操作全局节流
+## 写操作预算与错误恢复
 
-`item_publish / item_delete / media_upload / message_send` 共用令牌桶：
-- 容量 1、每分钟补 1
-- 短时连发会返回 `RATE_LIMITED`
-- RGV587（服务端风控）触发后需用户从浏览器重新导 cookie（带 x5sec/mtop_partitioned_detect），`auth_reset_guard` 只解本地熔断
+- 同账号发布和下架使用 `item.write`，消息使用 `message.write`，默认各 1 次/分钟。
+- 上传使用独立 `media.write`，默认 9 次/分钟；上传收据通过 `images_json` 复用。
+- CLI 进程与 MCP 线程共享加锁、原子保存的状态；损坏文件拒绝写入。
+- 本机预算不代表平台额度；平台风控触发账号熔断，`auth_reset_guard` 只改变本机状态。
+- 发布失败保留图片、类目、地址及提交状态；`submission_unknown` 先回读，不能自动重发。
+- 搜索 `complete=false` 是未完成，CLI 非零退出，MCP `ok=false` 仍带部分 `data`。
+- 搜索的品牌、成色未知时是 null；用 labels 查看原始标签，不能按顺序猜属性。空查询命中不含网页推荐。
 
 ## 错误类型映射
 

@@ -15,39 +15,48 @@
 
 </div>
 
+https://github.com/user-attachments/assets/ae20ae2f-ccdf-4d3e-a947-69182d4c4eff
+
 <p align="center">
-  <a href="media/goofish-cli-promo.mp4">
-    <img src="media/goofish-cli-promo.gif" alt="goofish-cli 演示" width="760">
-  </a>
-  <br>
-  <em>▶️ 点击查看带终端音效 + 配乐的高清 MP4（46s）</em>
+  <em>▶️ 播放不了？<a href="media/goofish-cli-promo.mp4">点这里下载高清 MP4（1:32）</a></em>
 </p>
 
-<!--
-  想在 README 里内嵌「带声音的播放器」？GitHub 上唯一的办法：
-  1. 打开本仓库任意 issue / PR 评论框（或 Releases 编辑页）
-  2. 把 media/goofish-cli-promo.mp4 拖进去，等它生成 https://github.com/user-attachments/assets/xxxx 链接
-  3. 把那串链接单独一行粘进这里，GitHub 会自动渲染成带声音的播放器
-  （提交进仓库的 mp4 用 <video> 标签会被 GitHub 过滤，不渲染）
--->
-
 `goofish-cli` 把闲鱼（Xianyu/Goofish）的核心运营能力抽成一套结构化命令，
-**同一份定义**同时输出给三种消费者：
+**同一份定义**同时输出给四种消费者：
 
 - 👨‍💻 **人类**：`goofish item get 12345 --format table`
 - 🤖 **AI Agent（Claude Code / Cursor / Codex）**：`uvx goofish-cli` → 自动注册成 MCP tool
 - 🧩 **Claude Skills**（v0.3）：5 个内置 skill，`goofish skills install` 一行装到 `~/.claude/skills/`
+- **OpenClaw**：ClawHub bundle 一次安装 MCP server + 5 个 skills
 
 > 架构思想来自 [opencli](https://github.com/jackwener/opencli) 的 single-registry 设计。
 
 ---
 
+## 特别鸣谢
+
+<p align="center">
+  <a href="https://www.ipwo.net/?ref=githubgoofishcli">
+    <img src="media/ipwo-banner.png" alt="IPWO 住宅代理：稳定连接、全球节点、多协议支持" width="95%">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://www.ipwo.net/?ref=githubgoofishcli"><ins>IPWO</ins></a> 拥有 9000 万+ 活跃住宅 IP 资源，覆盖 195+ 个国家和地区。<br>
+  提供动态住宅代理、静态住宅代理及不限量住宅代理。<br>
+  适用于网页抓取、数据采集、浏览器自动化、跨境业务等场景。<br>
+  我们订阅使用 Claude / Claude Code 时采用住宅 IP，长期使用稳定。<br>
+  支持<a href="https://www.ipwo.net/?ref=githubgoofishcli"><ins>免费测试</ins></a>，<strong>9 折优惠码：</strong><code>0203</code>
+</p>
+
+---
+
 ## ✨ 核心特性
 
-- 🔐 **16 个命令覆盖核心链路**：发布、下架、查询、图片上传、AI 类目识别、默认地址、IM 收发 + 会话列表、skills 安装
+- 🔐 **17 个命令覆盖核心链路**：发布、下架、查询、图片上传、AI 类目识别、默认地址、IM 收发 + 会话列表、skills 安装
 - 📡 **真·实时 IM**：WebSocket 长连 + 自动重连 + **三类事件分类输出**
   - `event=message`（收到消息）· `event=read`（已读回执）· `event=new_msg`（轻量通知）
-- 🛡 **内置风控护栏**：令牌桶限流（1 写/分钟）+ RGV587 自动熔断
+- 🛡 **内置风控护栏**：账号与业务桶限流（经营 1 次/分钟、媒体 9 次/分钟）+ RGV587 自动熔断
 - 🧠 **AI-first I/O**：`--format json/yaml/table/md/csv`，给 LLM 喂 JSON、给人看表格
 - ⚡ **一次定义，三种入口**：CLI / MCP / Skill 共享同一 registry
 - ✅ **真实端到端验证**：每个命令都跑过真实账号
@@ -65,13 +74,46 @@ goofish auth login ~/Downloads/goofish-cookies.json
 
 # 3. 验证登录态
 goofish auth status
-# → {"unb":"2214350705775","tracknick":"xy575986224572","nick":"...","valid":true}
+# → {"unb":"<masked-unb>","tracknick":"<masked-tracknick>","nick":"...","valid":true}
 
 # 4. 干活
 goofish item get 1045171414271
 goofish message watch                               # 实时接收消息
 goofish message send <cid> <toid> --text "在的"    # 发消息
 ```
+
+### 不占用桌面的沙箱模式
+
+需要运行中的本机 Docker Desktop / Docker Engine。安装支持沙箱的版本后，先在终端执行：
+
+```sh
+goofish sandbox --help
+goofish sandbox start
+# 手动打开输出的观察链接，默认 http://127.0.0.1:16080/vnc.html?autoconnect=1&resize=scale
+goofish sandbox login  # 在虚拟桌面里扫码并确认
+
+goofish sandbox run auth status --format json
+goofish sandbox run search items '机械键盘' --limit 3
+```
+
+让 AI 客户端也使用沙箱时，将原有 `goofish` MCP 配置替换为：
+
+```json
+{
+  "mcpServers": {
+    "goofish": {
+      "command": "goofish",
+      "args": ["sandbox", "mcp"]
+    }
+  }
+}
+```
+
+客户端必须能找到 `goofish` 和 `docker`；桌面客户端找不到命令时，将 `command` 改为 `command -v goofish` 输出的绝对路径，并检查客户端 PATH 中是否有 Docker。Codex 使用 TOML，见 [MCP 客户端配置](docs/mcp-setup.md#独立桌面模式)。不要同时保留原来的本机 Goofish server；直接运行 `uvx goofish-cli` 仍使用本机模式。
+
+首次启动会下载并构建镜像。Chromium 在容器虚拟桌面里常驻，登录态保存在独立卷；命令不会自动打开宿主机浏览器。平台要求验证时，执行 `goofish sandbox browse --item-id <商品ID>`，在观察页面人工完成。升级后用 `stop`、`start --rebuild` 更新镜像，状态卷保留。
+
+如果 `sandbox --help` 不识别命令，当前安装的发行版尚未包含沙箱功能。源码安装、完整的登录/恢复步骤和限制见[沙箱指南](docs/sandbox.md)。
 
 ---
 
@@ -110,6 +152,39 @@ claude /plugin marketplace add fancyboi999/goofish-cli
 
 ---
 
+## OpenClaw / ClawHub
+
+OpenClaw `2026.6.1` 及以上可把本仓库作为 compatible bundle 加载。已发布到
+[ClawHub](https://clawhub.ai/plugins/openclaw-goofish)，安装：
+
+<!-- x-release-please-start-version -->
+```bash
+openclaw plugins install clawhub:openclaw-goofish
+
+# 登录态由用户在终端初始化，不交给 Agent 覆盖
+uvx --from goofish-cli==0.6.0 goofish auth login --qr
+
+openclaw plugins inspect goofish --json
+openclaw gateway restart
+```
+<!-- x-release-please-end -->
+
+本地开发无需发布：
+
+```bash
+openclaw plugins install -l .
+openclaw plugins inspect goofish --json
+```
+
+重启后新会话会获得 5 个 skills，以及 `goofish__auth_status`、
+`goofish__item_get` 等 MCP tools。bundle 默认不暴露需要操作者执行或会长期阻塞的
+`auth_login`、`auth_reset_guard`、`message_watch`、`skills_install`。
+
+运行 MCP server 需要 PATH 中有 [`uv`](https://docs.astral.sh/uv/)。完整说明见
+[MCP 接入指南](./docs/mcp-setup.md)。
+
+---
+
 ## 📟 命令详略与真实输出
 
 <details open>
@@ -130,7 +205,7 @@ $ goofish list-commands --format table
 | `media upload` | 上传图片到闲鱼 CDN | ✅ |
 | `category recommend` | AI 识别商品类目 | ❌ |
 | `location default` | 获取默认发布地址 | ❌ |
-| `message list-chats` | 拉取会话列表（左栏；`--watch-secs N` 叠加 WS 历史推送补漏） | ❌ |
+| `message list-chats` | 会话列表（默认 HTTP + 短时 WS，补最近消息并按活动时间倒序） | ❌ |
 | `search items` | 搜索闲鱼商品（浏览器路径 Playwright + 系统 Chrome） | ❌ |
 | `item view` | 浏览器视角看商品详情（字段完整，抗风控；`item get` 的姊妹版） | ❌ |
 | `message history` | 拉取会话历史消息 | ❌ |
@@ -139,13 +214,29 @@ $ goofish list-commands --format table
 
 </details>
 
+会话读取使用真实消息时间，而非会话创建时间：
+
+```bash
+goofish message list-chats --format json
+goofish message history <cid> --limit 20 --timeout 30 --format json
+```
+
+`list-chats` 默认 `--watch-secs 5`，在一个已就绪的连接中补齐真人会话的最近消息页；
+`--watch-secs 0` 关闭 WS 会话发现，结果可能遗漏 HTTP 未返回的会话。
+`--timeout` 限制摘要读取阶段。历史输出保留 `cid`、`message_id` 和毫秒时间 `created_at`，
+`--limit 0` 保留完整翻页行为，其他正数只读最近 N 条。
+
+`metadata_status` 标明摘要是当前、为空、不完整或读取失败；无法确定的时间为 `null`。
+`has_more` 只代表 HTTP 分页，`enumeration_complete=false` 表明短时同步不能证明全部历史会话已覆盖。
+接口契约与异常边界见 [会话同步](docs/conversation-sync.md)。
+
 <details>
 <summary><b><code>goofish auth status</code></b> — 登录态健康检查</summary>
 
 ```json
 {
-  "unb": "2214350705775",
-  "tracknick": "xy575986224572",
+  "unb": "<masked-unb>",
+  "tracknick": "<masked-tracknick>",
   "nick": "闲鱼用户昵称",
   "valid": true,
   "h5_token_exp": "2026-04-21T20:30:00+08:00"
@@ -163,10 +254,10 @@ $ goofish message watch
 实时输出（小号给主号发 3 条 + 主号读了所有消息）：
 
 ```jsonl
-{"event":"message","cid":"60585751957","send_user_id":"2215266653893","send_user_name":"小号昵称","send_message":"测试消息1"}
-{"event":"message","cid":"60585751957","send_user_id":"2215266653893","send_user_name":"小号昵称","send_message":"测试消息2"}
-{"event":"message","cid":"60585751957","send_user_id":"2215266653893","send_user_name":"小号昵称","send_message":"测试消息3"}
-{"event":"read","cid":"60585751957","msg_ids":["4077151826249.PNM","4066820235744.PNM","4066826134477.PNM"],"status":1,"ts":"1776770953455"}
+{"event":"message","cid":"<masked-cid>","send_user_id":"<masked-user-id>","send_user_name":"小号昵称","send_message":"测试消息1"}
+{"event":"message","cid":"<masked-cid>","send_user_id":"<masked-user-id>","send_user_name":"小号昵称","send_message":"测试消息2"}
+{"event":"message","cid":"<masked-cid>","send_user_id":"<masked-user-id>","send_user_name":"小号昵称","send_message":"测试消息3"}
+{"event":"read","cid":"<masked-cid>","msg_ids":["<masked-msg-id-1>","<masked-msg-id-2>","<masked-msg-id-3>"],"status":1,"ts":"<masked-timestamp>"}
 ```
 
 | 事件 | 字段 |
@@ -182,12 +273,12 @@ $ goofish message watch
 <summary><b><code>goofish message send</code></b> — 主动发消息</summary>
 
 ```bash
-$ goofish message send 60585751957 2215266653893 \
+$ goofish message send <masked-cid> <masked-user-id> \
     --text "在的 claude 测试成功 ✅" --item-id 1045171414271
 ```
 
 ```json
-{"ok": true, "mid": "1061776769407570", "cid": "60585751957"}
+{"ok": true, "mid": "<masked-message-id>", "cid": "<masked-cid>"}
 ```
 </details>
 
@@ -195,32 +286,30 @@ $ goofish message send 60585751957 2215266653893 \
 <summary><b><code>goofish item publish</code></b> — 发布商品（含风控护栏）</summary>
 
 ```bash
-$ goofish item publish \
-    --title "男士毛呢大衣 驼色长款" \
-    --desc "全新未拆封 原价 2999 现 999" \
-    --images ./a.png,./b.png \
-    --price 999
+goofish item publish "男士毛呢大衣 驼色长款" \
+    "全新未拆封 原价 2999 现 999" ./a.png ./b.png 999 --format json
 ```
 
-流程：
-1. `media upload` 每张图 → CDN URL + 尺寸
-2. `category recommend` 拿 AI 识别的 catId
-3. `location default` 拿默认地址
-4. `mtop.idle.pc.idleitem.publish` 落库
+流程：上传图片 → 推荐类目 → 默认地址 → 提交。已有上传收据可通过
+`--images-json '[{"url":"https://example.alicdn.com/image.png","width":1024,"height":1024}]'`
+复用，省略本地图片参数；已确认类目和地址分别通过 `--category-json`、`--location-json`
+传入对应工具返回的完整 DTO。
 
-返回：
-```json
-{"ok": true, "itemId": "1046118265141", "status": "published"}
-```
+返回 `item_id`、`status="accepted"` 和 `requires_readback=true`；使用
+`goofish item get <item_id>` 和自己的商品列表确认保存。失败也保留已上传图片和准备信息；
+`submission_unknown` 必须先核对商品列表，不自动重复发布。
 
-**触发令牌桶限流**（1 写/分钟）。高频调用会被本地拒绝，避免被闲鱼风控。
+发布与下架共用账号的 `item.write` 预算，默认 1 次/分钟；媒体上传独立计数，默认
+9 次/分钟。一个多图商品只消耗一次商品预算。
 </details>
 
 ---
 
 ## 🔌 接入 Claude Code（MCP）
 
-在 `~/.config/claude-code/config.json`：
+以下为本机模式；需要隔离桌面时，使用上面的沙箱 MCP 配置，客户端位置见 [MCP 接入指南](docs/mcp-setup.md)。
+
+在项目根目录 `.mcp.json` 配置：
 
 ```json
 {
@@ -233,7 +322,7 @@ $ goofish item publish \
 }
 ```
 
-Claude 会自动把全部命令看成 tool：`goofish_item_get` / `goofish_item_publish` / `goofish_message_watch`... 你在对话里直接说"帮我看下 itemId=xxx 的详情"，Claude 就会调用。
+Claude 会自动把全部命令看成 tool：`mcp__goofish__item_get` / `mcp__goofish__item_publish` / `mcp__goofish__message_watch`... 你在对话里直接说"帮我看下 itemId=xxx 的详情"，Claude 就会调用。
 
 ---
 
@@ -247,8 +336,8 @@ Claude 会自动把全部命令看成 tool：`goofish_item_get` / `goofish_item_
 | WebSocket 批量 push 全量解码 | 一帧多条消息全部还原，不丢单 |
 | WebSocket 自动重连 | 断线自退避重连，长跑无感知 |
 | 已读回执 / typing / 新消息通知分类 | `/s/sync` 元事件结构化为三类 JSONL |
-| 全局限流 + 风控熔断 | 令牌桶 1 写/分钟 + RGV587 自动熔断 |
-| 单元测试 | 33 个，ruff 零告警 |
+| 全局限流 + 风控熔断 | 账号业务预算 + RGV587 自动熔断 |
+| 回归验证 | `pytest` + `ruff check src tests` |
 | 包分发 | `pip install goofish-cli` / `uvx goofish-cli` |
 
 ---

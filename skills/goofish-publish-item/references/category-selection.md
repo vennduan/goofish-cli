@@ -2,18 +2,18 @@
 
 ## 核心原则
 
-**不要猜类目**。`mcp__goofish__category_recommend` 接入的是淘系类目库，比人拍脑袋准。
+**不要猜类目**。`category_recommend` 接入的是淘系类目库，比人拍脑袋准。
 
 ## 调用姿势
 
 ```
-mcp__goofish__category_recommend(
+category_recommend(
     title="候选标题（尽量带品牌+核心词）",
     images=["首图URL"]
 )
 ```
 
-返回 `{catId, catName, confidence?}`。
+返回 `{cat_id, cat_name, channel_cat_id, tb_cat_id, confidence, confidence_source}`。confidence 为模型分数，不是校准概率；缺失为 null。
 
 ## 结果处理
 
@@ -75,4 +75,4 @@ mcp__goofish__category_recommend(
 
 ## 本模块不调其它工具
 
-只调 `category_recommend`。不需要 `item_get` 也不需要反查——API 给的 catId 直接传给 `item_publish` 就够。
+只调 `category_recommend`。不需要 `item_get` 也不需要反查——将完整类目 DTO 作为 category_json 传给 item_publish；缺少 cat_id/channel_cat_id/tb_cat_id 时不得猜补。
