@@ -4,6 +4,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.7.0](https://github.com/vennduan/goofish-cli/compare/v0.6.0...v0.7.0) (2026-10-20)
+
+
+### Features
+
+* **auth:** _m_h5_tk 过期自动用 Playwright goto 刷新重试 → v0.2.2 ([#5](https://github.com/vennduan/goofish-cli/issues/5)) ([db5f9a6](https://github.com/vennduan/goofish-cli/commit/db5f9a6047ed1153ee5a826552ae503c477b2e29))
+* **auth:** 从本机浏览器自动导入登录态 — 零认知负荷登录 ([712af23](https://github.com/vennduan/goofish-cli/commit/712af23a150fda4acbb212d7041ef169c1f53d54))
+* **auth:** 从本机浏览器自动导入登录态 — 零认知负荷登录 ([0b2926e](https://github.com/vennduan/goofish-cli/commit/0b2926ebafc56e310bd63c259ba5da11bf98bb2b))
+* **auth:** 扫码登录兜底 auth login --qr → v0.2.4 ([#7](https://github.com/vennduan/goofish-cli/issues/7)) ([8f15c36](https://github.com/vennduan/goofish-cli/commit/8f15c367f34b229f9cfa2c2d33e6fa76deca6881))
+* **auth:** 自动点 passport '快速进入' 免密登录 → v0.2.3 ([#6](https://github.com/vennduan/goofish-cli/issues/6)) ([998eabc](https://github.com/vennduan/goofish-cli/commit/998eabc0d15c256b683542cd38bd3e804e06b5dd))
+* **item:** add item list command via mtop API ([#10](https://github.com/vennduan/goofish-cli/issues/10)) ([77a6a29](https://github.com/vennduan/goofish-cli/commit/77a6a29c32635e02c1c293833d5b45e7fe6a1d4b))
+* **message:** add list-chats — 拉取会话列表 ([2009f8a](https://github.com/vennduan/goofish-cli/commit/2009f8aeed1e4190c3124c88f525289bcec60631))
+* **security:** encrypt cookie storage at rest with Fernet ([#9](https://github.com/vennduan/goofish-cli/issues/9)) ([c3ef406](https://github.com/vennduan/goofish-cli/commit/c3ef406b9c3fe0c3287d642d1aff77ae2bc3b1b2))
+* **skills:** 5 个 Claude Skill + goofish skills install → v0.3.0 ([#8](https://github.com/vennduan/goofish-cli/issues/8)) ([58aced2](https://github.com/vennduan/goofish-cli/commit/58aced232b5966263e5cad8a89f2f37de643524e))
+* v0.2.0 — 浏览器自动化链路 + list-chats WS 补漏 ([#3](https://github.com/vennduan/goofish-cli/issues/3)) ([5345eb6](https://github.com/vennduan/goofish-cli/commit/5345eb66f776df6341dae36bc173278b03448dd5))
+
+
+### Bug Fixes
+
+* **auth:** QR login broken after goofish login page revamp ([#18](https://github.com/vennduan/goofish-cli/issues/18)) ([3c2fc13](https://github.com/vennduan/goofish-cli/commit/3c2fc13018b33fd04f7a92fc16759d4d5004148d))
+* **auth:** 消化 Copilot review 反馈 — 边界/语义/性能 ([3cb03dc](https://github.com/vennduan/goofish-cli/commit/3cb03dc6254e6c9dd21be52270cc0dadd7cb2d99))
+* **auth:** 消化 Copilot review 反馈 — 边界/语义/性能 ([d02cf8d](https://github.com/vennduan/goofish-cli/commit/d02cf8d40b9acadebe1024de16c4ac0322f7e981))
+* clarify CLI and MCP entrypoint behavior ([#14](https://github.com/vennduan/goofish-cli/issues/14)) ([8dd23c1](https://github.com/vennduan/goofish-cli/commit/8dd23c12ee471d6d4d88f7eed6513b2a848112ca))
+* **item:** list 标签过滤 img 图标key + 翻页空页兜底 + 去重 + 删死代码 _item_id_from_url ([#13](https://github.com/vennduan/goofish-cli/issues/13)) ([dd65adf](https://github.com/vennduan/goofish-cli/commit/dd65adff42b31aaa6271069445d9d798dd3f61bd))
+* **mcp:** 新增 goofish-cli script 入口 → v0.2.1 ([#4](https://github.com/vennduan/goofish-cli/issues/4)) ([1dcf8db](https://github.com/vennduan/goofish-cli/commit/1dcf8db59901bf31cb74d59aecc658ac66f60ba1))
+
+
+### Documentation
+
+* add promo video (gif/mp4/poster) to README ([#11](https://github.com/vennduan/goofish-cli/issues/11)) ([e1d0ab2](https://github.com/vennduan/goofish-cli/commit/e1d0ab2fd77b1a028474eda3a2f7a1048a13ab01))
+* add promo video (gif/mp4/poster) to README ([#12](https://github.com/vennduan/goofish-cli/issues/12)) ([58bffd1](https://github.com/vennduan/goofish-cli/commit/58bffd1007b7b324663548534df32ca8ed2d0c29))
+
 ## [0.6.0](https://github.com/fancyboi999/goofish-cli/compare/v0.5.3...v0.6.0) (2026-10-19)
 
 
